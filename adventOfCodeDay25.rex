@@ -23,7 +23,7 @@ inputFileName = 'puzzleInput.txt'
 parse source system invocation fullProgramPath
 fullProgramPath = reverse(fullProgramPath)
 parse var fullProgramPath 'XER.' this_ '/' .
-this_ = reverse(programName)
+this_ = reverse(this_)
 
 /*check if the file exists*/
 queryFile = .stream~new(inputFileName)
