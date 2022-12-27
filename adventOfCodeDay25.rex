@@ -50,6 +50,11 @@ say time() this_ "Converting SNAFU numbers to decimal..."
 say
 
 call SNAFU2Decimal lines
+if rc > 0 then do
+    say time() this_ rc "Unable to generated SNAFU2DECIMAL list"
+    exit
+end
+
 
 
 exit rc
@@ -105,6 +110,7 @@ loop i over txtLines
         snafuConversion = snafuDecimalValue.j + snafuConversion
     end
 
+    /*remove blank space and queue*/
     snafuConversion = strip(snafuConversion)
     queue snafuConversion
 
@@ -115,7 +121,17 @@ end
 
 say
 say time() this_ "total items in queue:" queued()
+trace i
+/*check if the file exists*/
+queryFile = .stream~new("snafu2Decimal.txt")
+if queryFile~query("exists") \= " " then do
+    call SysFileDelete "snafu2Decimal.txt"
+    say time() this_ rc queryFile "deleted"
+end
+else 
+    queryFile~close
 
+trace o
 /*create output textfile*/
 outFile = .stream~new("snafu2Decimal.txt")
 
