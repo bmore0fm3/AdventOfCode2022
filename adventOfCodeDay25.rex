@@ -22,15 +22,15 @@ inputFileName = 'puzzleInput.txt'
 
 parse source system invocation fullProgramPath
 fullProgramPath = reverse(fullProgramPath)
-parse var fullProgramPath 'XER.' programName '/' .
-programName = reverse(programName)
+parse var fullProgramPath 'XER.' this_ '/' .
+this_ = reverse(programName)
 
 /*check if the file exists*/
 queryFile = .stream~new(inputFileName)
 if queryFile~query("exists") = " " then do
     rc = 8
     maxRC = max(rc, maxRC)
-    say time() programName inputFileName "does not exist"
+    say time() this_ inputFileName "does not exist"
     exit maxRC
 end
 else 
@@ -41,6 +41,8 @@ inputFile = .stream~new(inputFileName)
 lines = inputfile~arrayin
 inputFile~close
 
+say time() this_ "Reading" inputFinputFileName "..."
+say
 
 call SNAFU2Decimal lines
 
