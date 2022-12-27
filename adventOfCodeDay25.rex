@@ -121,8 +121,8 @@ end
 
 say
 say time() this_ "total items in queue:" queued()
-trace i
-/*check if the file exists*/
+
+/*Delete file if it exists*/
 queryFile = .stream~new("snafu2Decimal.txt")
 if queryFile~query("exists") \= " " then do
     call SysFileDelete "snafu2Decimal.txt"
@@ -131,7 +131,6 @@ end
 else 
     queryFile~close
 
-trace o
 /*create output textfile*/
 outFile = .stream~new("snafu2Decimal.txt")
 
