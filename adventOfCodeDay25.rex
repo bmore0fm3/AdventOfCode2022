@@ -37,11 +37,13 @@ else
     queryFile~close
 
 /*read in the file*/
+say time() this_ "Reading" inputFileName "..."
+say
 inputFile = .stream~new(inputFileName)
 lines = inputfile~arrayin
 inputFile~close
 
-say time() this_ "Reading" inputFinputFileName "..."
+say time() this_ "Converting SNAFU numbers to decimal..."
 say
 
 call SNAFU2Decimal lines
