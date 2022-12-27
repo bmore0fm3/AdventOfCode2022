@@ -22,8 +22,9 @@ inputFileName = 'puzzleInput.txt'
 
 parse source system invocation fullProgramPath
 fullProgramPath = reverse(fullProgramPath)
-parse var fullProgramPath 'XER.' this_ '/' .
+parse var fullProgramPath 'xer.' this_ '/' .
 this_ = reverse(this_)
+
 
 /*check if the file exists*/
 queryFile = .stream~new(inputFileName)
@@ -41,6 +42,8 @@ say time() this_ "Reading" inputFileName "..."
 say
 inputFile = .stream~new(inputFileName)
 lines = inputfile~arrayin
+if rc == 0 then 
+    say time() this_ 
 inputFile~close
 
 say time() this_ "Converting SNAFU numbers to decimal..."
