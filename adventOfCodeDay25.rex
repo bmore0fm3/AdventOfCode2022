@@ -18,65 +18,110 @@
 rc = 0
 maxRC = 0
 
-inputFileName = 'puzzleInput.txt'
+puzzleInputFile = 'puzzleInput.txt'
+decimalInputFile = 'snafu2Decimal.txt'
 
+/*get all the numbers and not just 9 by rexx default*/
+numeric digits 22
+
+/*Get this program's name*/
 parse source system invocation fullProgramPath
 fullProgramPath = reverse(fullProgramPath)
 parse var fullProgramPath 'xer.' this_ '/' .
 this_ = reverse(this_)
 
-
 /*check if the file exists*/
-queryFile = .stream~new(inputFileName)
+queryFile = .stream~new(puzzleInputFile)
 if queryFile~query("exists") = " " then do
     rc = 8
     maxRC = max(rc, maxRC)
-    say time() this_ inputFileName "does not exist"
+    say time() this_ maxRC puzzleInputFile "does not exist"
     exit maxRC
 end
 else 
     queryFile~close
 
-/*read in the file*/
-say time() this_ "Reading" inputFileName "..."
+
+/*read in the puzzle file*/
+say time() this_ "Reading" puzzleInputFile "..."
 say
-inputFile = .stream~new(inputFileName)
-lines = inputfile~arrayin
-if rc == 0 then 
-    say time() this_ 
+
+inputFile = .stream~new(puzzleInputFile)
+lines = inputFile~arrayin
+
+if rc > 0 then do
+    say time() this_ rc "Error reading file"
+    exit maxRC
+end 
 inputFile~close
+
 
 say time() this_ "Converting SNAFU numbers to decimal..."
 say
 
-call SNAFU2Decimal lines
-if rc > 0 then do
-    say time() this_ rc "Unable to generated SNAFU2DECIMAL list"
-    exit
+/*Convert the SNAFU numbers to decimal*/
+call SNAFU2Decimal lines decimalInputFile
+if rc > 4 then do
+    maxRC = max(rc, maxRC)
+    say time() this_ rc "Unable to generate SNAFU2DECIMAL list"
+    exit maxRC
 end
 
 
+/*check if the decimal file exists*/
+queryFile = .stream~new(decimalInputFile)
+if queryFile~query("exists") = " " then do
+    rc = 8
+    maxRC = max(rc, maxRC)
+    say time() this_ maxRC decimalInputFile "does not exist"
+    exit maxRC
+end
+else 
+    queryFile~close
 
-exit rc
 
-/*
-    Name: SNAFU2Decimal
-    Note: Input is a list of SNAFU numbers. The goal is to transalate SNAFU 
-          numbers to decimal numbers. Process is as follows:
-            1. Get the length of the SNAFU number
-            2. Parse the SNAFU number to get the first number
-            3. Calculate the position # by subtracting 1 from SNAFU number 
-               length. Then use that number as an exponent for 5. 
-               Ex. 5^(length-1)
-            4. Multiply position value by nextChar value
-            5. Save the value to stem variable
-            6. Sum up the stem and store
-          Return a text file with SNAFU numbers converted to decimal.
-*/
+/*read in the decimal file*/
+drop inputFile lines
+say time() this_ "Reading" decimalInputFile "..."
+say
+
+decimalFile = .stream~new(decimalInputFile)
+decimalLines = decimalFile~arrayin
+
+if rc > 0 then do
+    maxRC = max(rc, maxRC)
+    say time() this_ rc "Error reading file" decimalFile
+    exit maxRC
+end 
+decimalFile~close
+
+
+call AddItUp decimalLines
+say result
+
+
+exit maxRC
+
+/******************************************************************************
+Name: SNAFU2Decimal
+Note: Input is a list of SNAFU numbers. The goal is to transalate SNAFU 
+      numbers to decimal numbers. Process is as follows:
+        1. Get the length of the SNAFU number
+        2. Parse the SNAFU number to get the first number
+        3. Calculate the position # by subtracting 1 from SNAFU number 
+            length. Then use that number as an exponent for 5. 
+            Ex. 5^(length-1)
+        4. Multiply position value by nextChar value
+        5. Save the value to stem variable
+        6. Sum up the stem and store
+        Return a text file with SNAFU numbers converted to decimal.
+******************************************************************************/
 SNAFU2Decimal: procedure
 this_ = 'SNAFU2Decimal'
+rc = 0
+maxRC = 0
 
-arg txtLines .
+parse arg txtLines outputFile .
 
 loop i over txtLines
     snafuConversion = 0
@@ -87,7 +132,8 @@ loop i over txtLines
     /*Calculate the positonal value. Example positon is 5^2=25 */
     counter = 0
     do while inputStrLength > 0 
-        parse var i nextChar+1 i  
+        temp = i
+        parse var temp nextChar+1 temp
         /*say nextChar*/
         positionValue = 5 ** (inputStrLength - 1)
         counter = counter + 1
@@ -123,16 +169,18 @@ say
 say time() this_ "total items in queue:" queued()
 
 /*Delete file if it exists*/
-queryFile = .stream~new("snafu2Decimal.txt")
+queryFile = .stream~new(outputFile)
 if queryFile~query("exists") \= " " then do
     call SysFileDelete "snafu2Decimal.txt"
-    say time() this_ rc queryFile "deleted"
+    rc = 4
+    maxRC = max(rc,maxRC)
+    say time() this_ maxRC "Old" queryFile "deleted"
 end
 else 
     queryFile~close
 
 /*create output textfile*/
-outFile = .stream~new("snafu2Decimal.txt")
+outFile = .stream~new(outputFile)
 
 /*write queued data to text file*/
 do k = 1 for queued()
@@ -140,19 +188,43 @@ do k = 1 for queued()
     outputStr = strip(outputStr)
     outFile~lineout(outputStr)
 end k
+outFile~close
 
-return rc
+say time() this_ maxRC "New data written to" outFile
+
+maxRC = max(rc,maxRC)
+return maxRC 
 
 
+/*****************************************************************************
+Name: AddItUp
+Note: Input a list of decimal numbers. The goal is to get the sum of the
+      list of numbers. Process is as follows:
+            1. Get the length of the SNAFU number
+            2. Parse the SNAFU number to get the first number
+            3. Calculate the position # by subtracting 1 from SNAFU number 
+               length. Then use that number as an exponent for 5. 
+               Ex. 5^(length-1)
+            4. Multiply position value by nextChar value
+            5. Save the value to stem variable
+            6. Sum up the stem and store
+          Return the sum of all the numbers
+******************************************************************************/
+AddItUp: procedure
+this_ = 'AddItUp'
+total = 0
 
+parse arg txtLines 
 
+loop i over txtLines
+    /*say i*/
+    total = i + total 
+end
 
+say time() this_ "The total number is" total
 
-/*AddItUp:
-    Input is a list of decimal numbers
-    Get the sum of that list
-    Return the sum
-*/
+return total
+
 
 /*Decimal2SNAFU:
     Input is a list of decimal numbers
