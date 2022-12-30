@@ -22,7 +22,7 @@ puzzleInputFile = 'puzzleInput.txt'
 decimalInputFile = 'snafu2Decimal.txt'
 
 /*get all the numbers and not just 9 by rexx default*/
-numeric digits 22
+numeric digits 24
 
 /*Get this program's name*/
 parse source system invocation fullProgramPath
@@ -81,7 +81,6 @@ else
 
 
 /*read in the decimal file*/
-drop inputFile lines
 say time() this_ "Reading" decimalInputFile "..."
 say
 
@@ -95,9 +94,10 @@ if rc > 0 then do
 end 
 decimalFile~close
 
-
+/*get the sum of all numbers converted from SNAFU*/
 call AddItUp decimalLines
-say result
+
+call Decimal2SNAFU result
 
 
 exit maxRC
@@ -131,8 +131,8 @@ loop i over txtLines
 
     /*Calculate the positonal value. Example positon is 5^2=25 */
     counter = 0
+    temp = i
     do while inputStrLength > 0 
-        temp = i
         parse var temp nextChar+1 temp
         /*say nextChar*/
         positionValue = 5 ** (inputStrLength - 1)
@@ -183,7 +183,7 @@ else
 outFile = .stream~new(outputFile)
 
 /*write queued data to text file*/
-do k = 1 for queued()
+do k = 1 to queued()
     parse pull outputStr
     outputStr = strip(outputStr)
     outFile~lineout(outputStr)
@@ -200,15 +200,8 @@ return maxRC
 Name: AddItUp
 Note: Input a list of decimal numbers. The goal is to get the sum of the
       list of numbers. Process is as follows:
-            1. Get the length of the SNAFU number
-            2. Parse the SNAFU number to get the first number
-            3. Calculate the position # by subtracting 1 from SNAFU number 
-               length. Then use that number as an exponent for 5. 
-               Ex. 5^(length-1)
-            4. Multiply position value by nextChar value
-            5. Save the value to stem variable
-            6. Sum up the stem and store
-          Return the sum of all the numbers
+            1. Simple loop to add the numbers. May move items from main exec
+               here later.
 ******************************************************************************/
 AddItUp: procedure
 this_ = 'AddItUp'
@@ -226,8 +219,69 @@ say time() this_ "The total number is" total
 return total
 
 
-/*Decimal2SNAFU:
-    Input is a list of decimal numbers
-    Translate the decimal numbers to SNAFU
-    return the SNAFU number
+/*****************************************************************************
+Name: Decimal2SNAFU
+Note: Input a decimal number. The goal is to convert it to SNAFU number
+       Process is as follows:
+            1. Simple loop to add the numbers. May move items from main exec
+               here later.
+******************************************************************************/
+Decimal2SNAFU: procedure
+this_ = 'Decimal2SNAFU'
+rc = 0
+maxRC = 0
+exponentNum = 0
+total = 0
+snafuValue.0 = 0
+newSum = 0
+i = 0
+
+parse arg decimalSum .
+
+/*Find the highest exponent Value*/
+do while total <= decimalSum
+    exponentNum = 5 ** i
+    total = total + (2 * exponentNum) 
+    say time() this_ "5^"i "=" exponentNum". Total is:" total
+    i = i + 1
+end
+
+/*Capture starting exponent value in readable variable*/
+exponentNum = i - 1
+
+/*Logic to determine if we place 1 in first position or skip to main logic*/
+if (5 ** i) > decimalSum then do
+    snafuValue.0 = 1
+    snafuValue.1 = 1
+    exponentNum = exponentNum - 1
+    newSum = newSum + (5 ** i)
+end
+
+do j = exponentNum to 0 by - 1
+    do while newSum  decimalSum
+
+    end
+end
+
+  
+
+
+
+
+
+/*
+do while answer <= decimalSum
+    exponentNum = 5**i
+     
+
+    if exponentNum > decimalSum then
+        leave 
+    else 
+        answer = exponentNum
+
+    say time() this_ "The result for " i "is " answer
+    i = i + 1
+end
 */
+
+return answer
