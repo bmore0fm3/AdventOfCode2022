@@ -97,6 +97,7 @@ decimalFile~close
 /*get the sum of all numbers converted from SNAFU*/
 call AddItUp decimalLines
 
+/*Convert the sum to a snafu number*/
 call Decimal2SNAFU result
 
 
@@ -223,47 +224,111 @@ return total
 Name: Decimal2SNAFU
 Note: Input a decimal number. The goal is to convert it to SNAFU number
        Process is as follows:
-            1. Simple loop to add the numbers. May move items from main exec
-               here later.
+            1. 
 ******************************************************************************/
 Decimal2SNAFU: procedure
 this_ = 'Decimal2SNAFU'
 rc = 0
 maxRC = 0
+
 exponentNum = 0
+exponentCounter = 0
 total = 0
-snafuValue.0 = 0
-newSum = 0
-i = 0
+snafuNumber.0 = 0
+previousValue = 0
 
 parse arg decimalSum .
 
 /*Find the highest exponent Value*/
-do while total <= decimalSum
-    exponentNum = 5 ** i
+do forever 
+    
+    exponentNum = 5 ** exponentCounter
     total = total + (2 * exponentNum) 
-    say time() this_ "5^"i "=" exponentNum". Total is:" total
-    i = i + 1
-end
+    say time() this_ "5^"exponentCounter "=" exponentNum". Total is:" total
 
-/*Capture starting exponent value in readable variable*/
-exponentNum = i - 1
+    if total <= decimalSum then 
+        exponentCounter = exponentCounter + 1
+    else leave
+end 
 
-/*Logic to determine if we place 1 in first position or skip to main logic*/
-if (5 ** i) > decimalSum then do
-    snafuValue.0 = 1
-    snafuValue.1 = 1
-    exponentNum = exponentNum - 1
-    newSum = newSum + (5 ** i)
-end
 
-do j = exponentNum to 0 by - 1
-    do while newSum  decimalSum
+/*Capture total number of exponenets*/
+snafuNumber.0 = exponentCounter
+sortingArray = .array~new(4) 
 
+/*Iterate over each exponent number*/
+do loopCounter = exponentCounter to 0 by -1
+
+    say loopCounter
+    
+    /*clear array*/
+    sortingArray~empty
+    currentValue = ''
+
+    /*Capture each value from 2 to -2*/
+    do innerLoopCount = 2 to -2 by -1
+        tempValue = ((5 ** loopCounter) * innerLoopCount) + previousValue
+        /*say time() this_ "TempValue iteration #" innerLoopCount "is,
+                            "tempValue
+        */
+
+        if decimalSum > tempValue then
+            difference =  decimalSum - tempValue
+        else difference = tempValue - decimalSum
+
+        if currentValue = '' then do
+            currentValue = difference
+            totalValue = tempValue
+            snafuNumber.loopCounter = innerLoopCount
+        end
+        else if difference < currentValue then do
+            currentValue = difference
+            totalValue = tempValue
+            snafuNumber.loopCounter = innerLoopCount
+        end
+        else nop
+
+
+        /*say time() this_ "Difference is" difference*/
+
+       /*sortingArray~insert(difference)*/
     end
+    previousValue = totalValue
+    
+    say time() this_ "Current loop count is" loopCounter
+    say time() this_ "snafuNumber."loopCounter "is" snafuNumber.loopCounter
+    say time() this_ "totalValue is" totalValue
+    say time() this_ "previousValue is" previousValue
+
+
+    /*sortingArray~sortWith(.NumericComparator~new)*/
+
 end
 
-  
+/*show value on array*/
+say
+say time() this_ "Answer Below"
+do i = exponentCounter to 0 by -1
+    say time() this_ "snafuNumber."i "is" snafuNumber.i
+end
+
+
+/*from 2 to -2 calculate:
+tempValue = (5**exponentCounter)+previousValue
+Check which number is higher, tempValue or decimalValue
+Subtract higher number from lesser
+Save value
+*/
+
+/*Determine which value is closer to zero*/
+/*save this value as previous value*/
+
+
+
+
+
+
+
 
 
 
@@ -284,4 +349,4 @@ do while answer <= decimalSum
 end
 */
 
-return answer
+return 
