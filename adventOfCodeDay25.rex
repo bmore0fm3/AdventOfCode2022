@@ -134,7 +134,7 @@ this_ = 'SNAFU2Decimal'
 rc = 0
 maxRC = 0
 
-snafu_concersion_array = .array~new() 
+snafu_conversion_array = .array~new() 
 
 parse arg txt_lines .
 
@@ -173,7 +173,7 @@ loop i over txt_lines
 
     /*remove blank space and queue*/
     snafu_conversion = strip(snafu_conversion)
-    snafu_concersion_array~append(snafu_conversion) 
+    snafu_conversion_array~append(snafu_conversion) 
     
     /*
     say time() this_ "SNAFU number" i "has a decimal value of" snafu_conversion
@@ -182,7 +182,7 @@ loop i over txt_lines
 
 end 
 
-return snafu_concersion_array
+return snafu_conversion_array
 
 
 /*****************************************************************************
