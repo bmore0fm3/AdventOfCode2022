@@ -18,90 +18,102 @@
 rc = 0
 maxRC = 0
 
-puzzleInputFile = 'puzzleInput.txt'
-decimalInputFile = 'snafu2Decimal.txt'
+puzzle_input_file = 'puzzleInput.txt'
+decimal_input_file = 'snafu2Decimal.txt'
 
 /*get all the numbers and not just 9 by rexx default*/
 numeric digits 24
 
 /*Get this program's name*/
-parse source system invocation fullProgramPath
-fullProgramPath = reverse(fullProgramPath)
-parse var fullProgramPath 'xer.' this_ '/' .
+parse source system invocation full_program_path
+full_program_path = reverse(full_program_path)
+parse var full_program_path 'xer.' this_ '/' .
 this_ = reverse(this_)
 
+/*remove extraneous space from filename*/
+puzzle_input_file = strip(puzzle_input_file)
+
 /*check if the file exists*/
-queryFile = .stream~new(puzzleInputFile)
-if queryFile~query("exists") = " " then do
-    rc = 8
-    maxRC = max(rc, maxRC)
-    say time() this_ maxRC puzzleInputFile "does not exist"
-    exit maxRC
+call verify_file puzzle_input_file 
+parse var result called_rc retun_msg
+
+/*check rc*/
+if called_rc > 0 then do
+    say time() this_ called_rc return_msg
+    exit
 end
-else 
-    queryFile~close
+else say time() this_ called_rc retun_msg
 
 
-/*read in the puzzle file*/
-say time() this_ "Reading" puzzleInputFile "..."
+/*read in the puzzle file into an array*/
+say time() this_ "Reading" puzzle_input_file "..."
 say
 
-inputFile = .stream~new(puzzleInputFile)
-lines = inputFile~arrayin
+input_file = .stream~new(puzzle_input_file)
+lines = input_file~arrayin
 
 if rc > 0 then do
     say time() this_ rc "Error reading file"
     exit maxRC
 end 
-inputFile~close
+
+input_file~close
 
 
 say time() this_ "Converting SNAFU numbers to decimal..."
 say
 
+
 /*Convert the SNAFU numbers to decimal*/
-call SNAFU2Decimal lines decimalInputFile
+call SNAFU2Decimal lines 
 if rc > 4 then do
     maxRC = max(rc, maxRC)
     say time() this_ rc "Unable to generate SNAFU2DECIMAL list"
     exit maxRC
 end
 
-
-/*check if the decimal file exists*/
-queryFile = .stream~new(decimalInputFile)
-if queryFile~query("exists") = " " then do
-    rc = 8
-    maxRC = max(rc, maxRC)
-    say time() this_ maxRC decimalInputFile "does not exist"
-    exit maxRC
-end
-else 
-    queryFile~close
-
-
-/*read in the decimal file*/
-say time() this_ "Reading" decimalInputFile "..."
+/*read the converted decimal numbers from the array*/
+say time() this_ "Reading decimal numbers from array..."
 say
 
-decimalFile = .stream~new(decimalInputFile)
-decimalLines = decimalFile~arrayin
-
-if rc > 0 then do
-    maxRC = max(rc, maxRC)
-    say time() this_ rc "Error reading file" decimalFile
-    exit maxRC
-end 
-decimalFile~close
-
 /*get the sum of all numbers converted from SNAFU*/
-call AddItUp decimalLines
+call AddItUp result
 
 /*Convert the sum to a snafu number*/
 call Decimal2SNAFU result
 
 
 exit maxRC
+
+
+/******************************************************************************
+Name: verify_file
+Note: Ensure that the text file exists. If not return 8
+******************************************************************************/
+verify_file: procedure 
+this_ = 'verify_file'
+rc = 0
+max_rc = 0
+
+parse arg file_name .
+
+/* remove extraneous space*/
+file_name = strip(file_name) 
+
+/*check if the file exists*/
+query_file = .stream~new(file_name)
+if query_file~query("exists") == " " then do
+    rc = 8
+    max_rc = max(rc, max_rc)
+    return_string = max_rc "Error:" file_name "does not exist"
+end
+else do
+    rc = 0
+    max_rc = max(rc, max_rc)
+    return_string = max_rc "Success:" file_name "file exists"
+    query_file~close
+end
+return return_string
 
 /******************************************************************************
 Name: SNAFU2Decimal
@@ -114,87 +126,63 @@ Note: Input is a list of SNAFU numbers. The goal is to transalate SNAFU
             Ex. 5^(length-1)
         4. Multiply position value by nextChar value
         5. Save the value to stem variable
-        6. Sum up the stem and store
-        Return a text file with SNAFU numbers converted to decimal.
+        6. Sum up the stem and store in an array
+        Return a array with the SNAFU numbers converted to decimal.
 ******************************************************************************/
 SNAFU2Decimal: procedure
 this_ = 'SNAFU2Decimal'
 rc = 0
 maxRC = 0
 
-parse arg txtLines outputFile .
+snafu_concersion_array = .array~new() 
 
-loop i over txtLines
-    snafuConversion = 0
-    snafuDecimalValue.0 = 0
-    inputStrLength = length(i)
-    say time() this_ "SNAFU string" i "has" inputStrLength "digits."
+parse arg txt_lines .
+
+loop i over txt_lines
+    snafu_conversion = 0
+    snafu_decimal_value.0 = 0
+    input_str_length = length(i)
+    /*say time() this_ "SNAFU string" i "has" input_str_length "digits."*/
 
     /*Calculate the positonal value. Example positon is 5^2=25 */
     counter = 0
     temp = i
-    do while inputStrLength > 0 
+    do while input_str_length > 0 
         parse var temp nextChar+1 temp
+
         /*say nextChar*/
-        positionValue = 5 ** (inputStrLength - 1)
+        position_Value = 5 ** (input_str_length - 1)
         counter = counter + 1
-        snafuDecimalValue.0 = counter
+        snafu_decimal_value.0 = counter
 
         /*Convert the - and = to -1 and -2 respectively*/
         if nextChar == '-' then
-            snafuDecimalValue.counter = positionValue * -1 
+            snafu_decimal_value.counter = position_value * -1 
         else if nextChar == '=' then
-            snafuDecimalValue.counter = positionValue * -2
+            snafu_decimal_value.counter = position_value * -2
         else
-            snafuDecimalValue.counter = positionValue * nextChar
+            snafu_decimal_value.counter = position_value * nextChar
 
-        /*say time() this_ "snafuDecimalValue = " snafuDecimalValue.counter*/
-        inputStrLength = inputStrLength - 1 
+        input_str_length = input_str_length - 1 
     end 
 
     /*Get sum of each position to complete conversion to decimal*/
-    do j = 1 to snafuDecimalValue.0 
-        snafuConversion = snafuDecimalValue.j + snafuConversion
+    do j = 1 to snafu_decimal_value.0 
+        snafu_conversion = snafu_decimal_value.j + snafu_conversion
     end
 
     /*remove blank space and queue*/
-    snafuConversion = strip(snafuConversion)
-    queue snafuConversion
-
-    say time() this_ "SNAFU number" i "has a decimal value of" snafuConversion
+    snafu_conversion = strip(snafu_conversion)
+    snafu_concersion_array~append(snafu_conversion) 
+    
+    /*
+    say time() this_ "SNAFU number" i "has a decimal value of" snafu_conversion
     say
+    */
 
 end 
 
-say
-say time() this_ "total items in queue:" queued()
-
-/*Delete file if it exists*/
-queryFile = .stream~new(outputFile)
-if queryFile~query("exists") \= " " then do
-    call SysFileDelete "snafu2Decimal.txt"
-    rc = 4
-    maxRC = max(rc,maxRC)
-    say time() this_ maxRC "Old" queryFile "deleted"
-end
-else 
-    queryFile~close
-
-/*create output textfile*/
-outFile = .stream~new(outputFile)
-
-/*write queued data to text file*/
-do k = 1 to queued()
-    parse pull outputStr
-    outputStr = strip(outputStr)
-    outFile~lineout(outputStr)
-end k
-outFile~close
-
-say time() this_ maxRC "New data written to" outFile
-
-maxRC = max(rc,maxRC)
-return maxRC 
+return snafu_concersion_array
 
 
 /*****************************************************************************
@@ -244,7 +232,6 @@ do forever
     
     exponentNum = 5 ** exponentCounter
     total = total + (2 * exponentNum) 
-    say time() this_ "5^"exponentCounter "=" exponentNum". Total is:" total
 
     if total <= decimalSum then 
         exponentCounter = exponentCounter + 1
@@ -258,8 +245,6 @@ sortingArray = .array~new(4)
 
 /*Iterate over each exponent number*/
 do loopCounter = exponentCounter to 0 by -1
-
-    say loopCounter
     
     /*clear array*/
     sortingArray~empty
@@ -294,15 +279,6 @@ do loopCounter = exponentCounter to 0 by -1
        /*sortingArray~insert(difference)*/
     end
     previousValue = totalValue
-    
-    say time() this_ "Current loop count is" loopCounter
-    say time() this_ "snafuNumber."loopCounter "is" snafuNumber.loopCounter
-    say time() this_ "totalValue is" totalValue
-    say time() this_ "previousValue is" previousValue
-
-
-    /*sortingArray~sortWith(.NumericComparator~new)*/
-
 end
 
 /*show value on array*/
@@ -311,42 +287,5 @@ say time() this_ "Answer Below"
 do i = exponentCounter to 0 by -1
     say time() this_ "snafuNumber."i "is" snafuNumber.i
 end
-
-
-/*from 2 to -2 calculate:
-tempValue = (5**exponentCounter)+previousValue
-Check which number is higher, tempValue or decimalValue
-Subtract higher number from lesser
-Save value
-*/
-
-/*Determine which value is closer to zero*/
-/*save this value as previous value*/
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-do while answer <= decimalSum
-    exponentNum = 5**i
-     
-
-    if exponentNum > decimalSum then
-        leave 
-    else 
-        answer = exponentNum
-
-    say time() this_ "The result for " i "is " answer
-    i = i + 1
-end
-*/
 
 return 
