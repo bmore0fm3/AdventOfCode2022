@@ -211,8 +211,6 @@ return total
 /*****************************************************************************
 Name: Decimal2SNAFU
 Note: Input a decimal number. The goal is to convert it to SNAFU number
-       Process is as follows:
-            1. 
 ******************************************************************************/
 Decimal2SNAFU: procedure
 this_ = 'Decimal2SNAFU'
