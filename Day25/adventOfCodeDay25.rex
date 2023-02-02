@@ -35,14 +35,14 @@ puzzle_input_file = strip(puzzle_input_file)
 
 /*check if the file exists*/
 call verify_file puzzle_input_file 
-parse var result called_rc retun_msg
+parse var result called_rc return_msg
 
 /*check rc*/
 if called_rc > 0 then do
     say time() this_ called_rc return_msg
     exit
 end
-else say time() this_ called_rc retun_msg
+else say time() this_ called_rc return_msg
 
 
 /*read in the puzzle file into an array*/
@@ -102,7 +102,7 @@ file_name = strip(file_name)
 
 /*check if the file exists*/
 query_file = .stream~new(file_name)
-if query_file~query("exists") == " " then do
+if query_file~query("exists") == "" then do
     rc = 8
     max_rc = max(rc, max_rc)
     return_string = max_rc "Error:" file_name "does not exist"
