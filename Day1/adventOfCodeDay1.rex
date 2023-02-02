@@ -14,6 +14,8 @@ elf.0 = 0
 count = 0
 total_calories = 0
 largest_amount_of_calories = 0
+top_three_elves = .array~new()
+sum_of_calories_for_three_elves = 0
 
 
 /*Get this program's name*/
@@ -74,18 +76,44 @@ input_file~close
 
 /* Who is carrying the most calories? How much is in the bag?*/
 do i = 1 to elf.0
+
+    /*build array for top three elves. easier to sort for now*/
+    top_three_elves~append(elf.i.total)
+    
+    /*compare to see who has the most calories in their bag*/
     if elf.i.total > largest_amount_of_calories then do
         largest_amount_of_calories = elf.i.total
         winning_elf = i
     end
+
 end
 
 say time() this_ "The elf carrying the most calories is" elf.winning_elf "with" largest_amount_of_calories
+drop elf. total_calories
+
+/*Find top three elves and get sum of their calories*/
+top_three_elves~sortWith(.NumericComparator~new)
+
+/*
+do number over top_three_elves
+    say time() this_ "checking if this is sorted:" number
+end
+*/
+
+
+total_items = top_three_elves~items
+top_three_range = total_items - 2  /*subtracting to get top three*/
+
+/*sum it up*/
+do i = top_three_range to total_items
+    sum_of_calories_for_three_elves = top_three_elves[i] + sum_of_calories_for_three_elves
+end
+
+say time() this_ "Sum of calories for the top three elves is" sum_of_calories_for_three_elves
+say
 
 exit max_rc
 
-
-/*Determine which elf instance has the max calories*/
 
 /******************************************************************************
 Name: verify_file
