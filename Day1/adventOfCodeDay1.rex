@@ -3,7 +3,9 @@
     adventOfCodeDay01
     https://adventofcode.com/2022/day/1
     Find the Elf carrying the most Calories. How many total Calories is that Elf
-    carrying?
+    carrying? Get the sum of the top 3 elves calories. 
+
+    Gotta learn how to use ooREXX objects. Elves probably could have been a classs
 */
 
 /*trace i*/
@@ -24,16 +26,21 @@ full_program_path = reverse(full_program_path)
 parse var full_program_path 'xer.' this_ '/' .
 this_ = reverse(this_)
 
-/*verify file exits*/
+/*verify file exists*/
 call verify_file puzzle_input_file 
 parse var result called_rc return_msg
 
 /*check verify_file return code*/
 if called_rc > 0 then do
     say time() this_ called_rc return_msg
-    exit
+    max_rc = max(called_rc, rc)
+    exit max_rc
 end
-else say time() this_ called_rc return_msg
+else do
+    say time() this_ called_rc return_msg
+    max_rc = max(called_rc, rc)
+    exit max_rc
+end
 say
 
 /*read in the file*/
@@ -50,13 +57,13 @@ do i = 1 to input_file~lines
     /*If the line is blank or end of file, process the previous strings*/
     if line == "" |,
        i == input_file~lines then do
-        say time() this_ total_calories "placed in this bag. Let's give it to an elf!"
+        say time() this_ total_calories "total calories placed in this bag. Let's give it to an elf!"
 
         /*create the first elf*/
         count = count + 1
         elf.0 = count
 
-        say time() this_ "Hello," elf.count "your bag of" total_calories "is ready!"
+        say time() this_ "Hello," elf.count "your bag of" total_calories "calories is ready!"
         say 
 
         /*Store the total calories the elf is carrying*/
@@ -70,7 +77,7 @@ do i = 1 to input_file~lines
 
 end
 
-say time() this_ "total elves created" elf.0
+say time() this_ "Total elves created" elf.0
 input_file~close 
 
 
