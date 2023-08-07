@@ -7,7 +7,8 @@
 
 
 rc = 0 
-totalScore = 0
+totalIncompleteScore = 0
+totalCompleteScore = 0
 puzzleInputFile = 'puzzleInput.txt'
 
 /*Get this program's name*/
@@ -39,7 +40,15 @@ loop i over txtLines
     heroStatus = calculateScore~shootRPS(opponentShape, heroShape)
     rpsOutcomeScore = calculateScore~roundOutcomeScore(heroStatus)
     roundScore = calculateScore~totalRoundScore(shapeScore, rpsOutcomeScore, 1)
-    totalScore = totalScore + roundScore
+    totalIncompleteScore = totalIncompleteScore + roundScore
+
+    heroAction = calculateScore~actionToTake(heroShapeCode)
+    heroNewShape = calculateScore~changeShape(heroAction, opponentShape)
+    newShapeScore = calculateScore~getShapeScore(heroNewShape)
+    newHeroStatus = calculateScore~shootRPS(opponentShape, heroNewShape)
+    newRpsOutcomeScore = calculateScore~roundOutcomeScore(newHeroStatus)
+    newRoundScore = calculateScore~totalRoundScore(newShapeScore, newRpsOutcomeScore, 1)
+    totalCompleteScore = totalCompleteScore + newRoundScore
 
     /*Print out messages for every round
     say time() this_ 'Opponent shape is:' opponentShape 
@@ -47,11 +56,15 @@ loop i over txtLines
     say time() this_ 'Hero shape score is:' shapeScore
     say time() this_ 'Hero win/loss status is:' heroStatus
     say time() this_ 'Hero rock, paper, scissors score for the round is:' rpsOutcomeScore
-    say time() this_ 'Hero rock, paper, scissors score + shape score for the round is:' roundScore
+    say time() this_ 'Hero rock, paper, scissors score + shape score for the round is:' roundScore 
+    say time() this_ 'Hero action to take is:' heroAction 
+    say time() this_ 'Hero new shape to 'heroAction' is:' heroNewShape
+    leave
     */
 end
 
-say time() this_ 'Total combined score is:' totalScore 
+say time() this_ 'Total combined score with incomplete strategy guide is:' totalIncompleteScore 
+say time() this_ 'Total combined score with complete strategy guide is:' totalCompleteScore
 
 
 exit rc 
@@ -149,5 +162,54 @@ exit rc
     end i 
 
     return totalScore
+
+::method actionToTake
+    use arg actionCode
+
+    select
+        when actionCode == 'X' then
+            action = 'Lose' 
+        when actionCode == 'Y' then
+            action = 'Draw' 
+        when actionCode == 'Z' then
+            action = 'Win' 
+    end 
+
+    return action
+
+::method changeShape
+    use arg actionToTake, opponentShape
+
+    select
+        /*Logic to win*/
+        when actionToTake == 'Win' then do 
+            if opponentShape == 'Rock' then 
+                newHeroShape = 'Paper' 
+            else if opponentShape == 'Paper' then 
+                newHeroShape = 'Scissors'
+            else if opponentShape == 'Scissors' then 
+                newHeroShape = 'Rock'
+            else 
+                newHeroShape = 'Invalid'
+        end
+
+        /*logic to lose*/
+        when actionToTake == 'Lose' then do 
+            if opponentShape == 'Rock' then 
+                newHeroShape = 'Scissors' 
+            else if opponentShape == 'Paper' then 
+                newHeroShape = 'Rock'
+            else if opponentShape == 'Scissors' then 
+                newHeroShape = 'Paper'
+            else 
+                newHeroShape = 'Invalid'
+        end 
+
+        /*logic to draw*/
+        when actionToTake == 'Draw' then
+                newHeroShape = opponentShape
+    end 
+
+    return newHeroShape
 
 

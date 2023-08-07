@@ -43,6 +43,12 @@ aTr = test1~execute(aTr)
 .TestDay02~new("shouldReturnTotalRoundScore7")~execute(aTr)
 .TestDay02~new("shouldReturnTotalScoreForOneRound")~execute(aTr)
 .TestDay02~new("shouldReturnTotalScoreForTwoRounds")~execute(aTr)
+.TestDay02~new("shouldReturnActionToLose")~execute(aTr)
+.TestDay02~new("shouldReturnActionToDraw")~execute(aTr)
+.TestDay02~new("shouldReturnActionToWin")~execute(aTr)
+.TestDay02~new("shouldReturnNewShapeToWin")~execute(aTr)
+.TestDay02~new("shouldReturnNewShapeToLose")~execute(aTr)
+.TestDay02~new("shouldReturnNewShapeToDraw")~execute(aTr)
 
 /*runs the test case and returns the result. Fine for a single test
 aTestResult=test1~execute*/
@@ -165,3 +171,27 @@ call simpleDumpTestResults aTr, "test_Day02 Results"
 ::method shouldReturnTotalScoreForTwoRounds
     getTotalScore = .Day02~new 
     self~assertEquals(18, getTotalScore~totalRoundScore(getTotalScore~getshapeScore('Scissors'), getTotalScore~roundOutcomeScore('Win'), 2))
+
+::method shouldReturnActionToLose
+    getAction = .Day02~new 
+    self~assertEquals('Lose', getAction~actionToTake('X'))
+
+::method shouldReturnActionToDraw
+    getAction = .Day02~new 
+    self~assertEquals('Draw', getAction~actionToTake('Y')) 
+
+::method shouldReturnActionToWin
+    getAction = .Day02~new 
+    self~assertEquals('Win', getAction~actionToTake('Z')) 
+
+::method shouldReturnNewShapeToWin
+    getNewShape = .Day02~new 
+    self~assertEquals('Paper', getNewShape~changeShape(getNewShape~actionToTake('Z'), 'Rock')) 
+
+::method shouldReturnNewShapeToLose
+    getNewShape = .Day02~new 
+    self~assertEquals('Scissors', getNewShape~changeShape(getNewShape~actionToTake('X'), 'Rock')) 
+
+::method shouldReturnNewShapeToDraw
+    getNewShape = .Day02~new 
+    self~assertEquals('Rock', getNewShape~changeShape(getNewShape~actionToTake('Y'), 'Rock')) 
