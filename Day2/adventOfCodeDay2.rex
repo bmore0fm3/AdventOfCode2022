@@ -1,7 +1,8 @@
 #!/usr/bin/env rexx
 /*REXX
     adventOfCodeDay02
-    1. Determine what the rock, paper scissors score would be according to the strategy guide the other elf gave you. 
+    1. Determine what the rock, paper scissors score would be according to the incomplete strategy guide the other elf gave you. 
+    2. Determine what the rock, paper scissors score would be according to the complete strategy guide the other elf gave you. 
 */
   
 
