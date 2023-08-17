@@ -3,8 +3,10 @@
     test_fileWork.rex
     Use the OORexxUnit test framework & Test Driven Development to help with puzzle. 
 
-    1. Determine what the rock, paper scissors score would be according to the incomplete strategy guide the other elf gave you.
-    2. Determine what the rock, paper scissors score would be according to the complete strategy guide the other elf gave you.  
+    1. Find the item type that appears in both compartments of each rucksack. 
+       What is the sum of the priorities of those item types? 
+    2. Find the item type that corresponds to the badges of each three-Elf group. 
+        What is the sum of the priorities of those item types?  
 
     Using TDD idea of Red -> Green -> Refactor 
     https://www.youtube.com/watch?v=llaUBH5oayw&list=PLwLLcwQlnXByqD3a13UPeT4SMhc3rdZ8q

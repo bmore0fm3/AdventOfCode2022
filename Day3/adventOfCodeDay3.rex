@@ -6,13 +6,18 @@
 
     1. Find the item type that appears in both compartments of each rucksack. 
        What is the sum of the priorities of those item types? 
-    2.  
+    2. Find the item type that corresponds to the badges of each three-Elf group. 
+        What is the sum of the priorities of those item types?
 */
   
 
 rc = 0 
 prioritySum = 0
+elvesPrioritySum = 0
+badgeSum = 0
 puzzleInputFile = 'puzzleInput.txt'
+elfArray = .array~new()
+
 
 /*Get this program's name*/
 parse source system invocation fullProgramPath
@@ -28,17 +33,31 @@ if inputFile~verifyFile(puzzleInputFile) == "" then do
     exit rc
 end
 else 
-    txtLines = inputFile~readFile(puzzleInputFile)
+    textLines = inputFile~readFile(puzzleInputFile)
 
 /*Construct object*/
 calculatePrioritySum = .Day03~new
 
 /*loop through strings to calculate priority*/
-loop i over txtLines
+loop i over textLines
     compartmentsArray = calculatePrioritySum~getCompartments(i)
-    commonItem = calculatePrioritySum~getItem(compartmentsArray)
+    commonItem = calculatePrioritySum~getItem(compartmentsArray, 'Y')
     itemPriority = calculatePrioritySum~getItemPriority(commonItem)
     prioritySum = prioritySum + itemPriority
+
+    /*Add ruck to bag unless we have three. If 3 rucks then find the priority of badge, then badgeSum*/
+    if (textlines~index(i) // 3) > 0 then
+        elfArray~append(i)
+
+    else do
+        elfArray~append(i)
+        elvesCommonItem = calculatePrioritySum~getItem(elfArray, 'N')
+        elvesItemPriority = calculatePrioritySum~getItemPriority(elvesCommonItem)
+        elvesPrioritySum = elvesPrioritySum + elvesItemPriority
+        elfArray~empty
+    end
+
+
 
     /*Print out messages for every round
     say time() this_ 'Compartments in array:' compartmentsArray~allItems
@@ -49,6 +68,7 @@ loop i over txtLines
 end
 
 say time() this_ 'Sum of priority items pull from ruck sacks is:' prioritySum
+say time() this_ 'Sum of priority items pull from ruck sacks is:' elvesPrioritySum
 
 exit rc
 
@@ -79,14 +99,33 @@ exit rc
     return compartments
 
 ::method getItem
-    use arg compartments
-
-    /*say compartments~allitems */
+    use arg ruckArray, compartments
     
-    /*use verify to get the position of matching item then use subchar to grab item*/
-    positionOfItem = compartments[1]~verify(compartments[2], 'M')
-    commonItem =  compartments[1]~subchar(positionOfItem)
-    /*say commonItem*/
+    if compartments == 'Y' then do
+        /*use verify to get the position of matching item then use subchar to grab item*/
+        positionOfItem = ruckArray[1]~verify(ruckArray[2], 'M')
+        commonItem =  ruckArray[1]~subchar(positionOfItem)
+        /*say commonItem*/
+    end
+    else do
+        /*loop through each char of the first array to check the others for the character*/
+        do i = 1 to ruckArray[1]~length
+            /*Char not in array two? Then move to next character*/
+            if pos(ruckArray[1]~subchar(i), ruckArray[2]) == 0 then
+                iterate
+
+            /*Character in array 1 matches a char in array 2. Let's check array 3*/
+            else do
+                /*Move to next char in array 1 if we can't find char in array 3*/
+                if pos(ruckArray[1]~subchar(i), ruckArray[3]) == 0 then
+                    iterate
+                else 
+                    commonItem = ruckArray[1]~subchar(i)
+                    leave
+            end
+
+        end
+    end 
 
   return commonItem
 
