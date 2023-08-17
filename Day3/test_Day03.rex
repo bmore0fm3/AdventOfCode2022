@@ -80,6 +80,3 @@ call simpleDumpTestResults aTr, "test_Day03 Results"
     elfArray~append('gltgVPngDPbptPsbPzVgmDldfTdfczThjJJjfMcJdFHjjH')
 
     self~assertEquals('M',commonItem~getItem(elfArray, 'N'))
-    
-    /*
-    ~intersection(elfArray~put('vJrwpWtwJgWrhcsFMMfFFhFp'))) */
