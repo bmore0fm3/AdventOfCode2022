@@ -5,7 +5,7 @@
     https://adventofcode.com/2022/day/4
 
     1. In how many assignment pairs does one range fully contain the other?
-    2. 
+    2. In how many assignment pairs is there ANY overlap?
 */
   
 
@@ -32,9 +32,9 @@ else
 /*Construct object*/
  campCleanUp = .Day04~new
 
-
-
-say time() this_ 'Total number of fully encompassed pairs:' campCleanUp~isFullyEncompassed(textLines)
+say time() this_ 'Total number of fully encompassed pairs:' campCleanUp~isFullyEncompassed(textLines, 'Full')
+say
+say time() this_ 'Total number pairs with ANY overlap:' campCleanUp~isFullyEncompassed(textLines, 'Any')
 
 exit rc
 
@@ -44,9 +44,13 @@ exit rc
 ::requires fileWork
 ::class Day04 public
 ::method isFullyEncompassed
-    use arg listArray 
+    use arg listArray, checktype
 
     totalFullyEncompassed = 0
+    hasOverlap = 0
+    list1 = .array~new()
+    list2 = .array~new()
+
 
     loop idPair over listArray
         /*separate pairs and separate upper and lower values*/
@@ -57,18 +61,45 @@ exit rc
 
         /*compare lower values*/
         select 
-            /*check as if reading from left to right*/
+            /*check as if reading from left to right for total overalp*/
             when lowerID1 >= lowerID2 &,
-                 upperID1 <= upperID2 then do
-                say time() "Item pair " listArray~index(idPair) 'is fully encompassed'
+                 upperID1 <= upperID2 &, 
+                 checkType = 'Full' then do
+                say time() "Item pair " listArray~index(idPair) "is fully encompassed"
                 totalFullyEncompassed = totalFullyEncompassed + 1
             end 
 
-            /*Check if reading from right to left*/
+            /*Check if reading from right to left for total overlap*/
             when lowerID2 >= lowerID1 &,
-                 upperID2 <= upperID1 then do
-                say time() "Item pair " listArray~index(idPair) 'is fully encompassed'
+                 upperID2 <= upperID1 &,
+                 checkType = 'Full' then do
+                say time() "Item pair " listArray~index(idPair) "is fully encompassed"
                 totalFullyEncompassed = totalFullyEncompassed + 1
+            end 
+
+            /*check as if reading from left to right for Any overlap*/
+            when checkType = 'Any' then do
+                list1~empty()
+                list2~empty()
+               
+                
+                /*separate lower and higher values of section assignment*/
+                do i = lowerID1 to upperId1 
+                    list1~append(i)
+                end i 
+
+                /*separate lower and higher values of section assignment*/
+                do j = lowerID2 to upperId2 
+                    list2~append(j)
+                end j
+
+                /*See what numbers overlap*/
+                listItems = list1~intersection(list2)
+                if listItems~items > 0 then do
+                    hasOverlap = hasOverlap + 1
+                    say time() "Item pair" listArray~index(idPair) "has overlap"
+                end
+
             end 
 
             otherwise iterate 
@@ -76,4 +107,11 @@ exit rc
 
     end
 
-    return totalFullyEncompassed
+    /*organize return data*/
+    if checktype = 'Full' then
+        overlapResults = totalFullyEncompassed
+    else if checktype = 'Any' then
+        overlapResults = hasOverlap
+    else 'Invalid'
+
+    return overlapResults
